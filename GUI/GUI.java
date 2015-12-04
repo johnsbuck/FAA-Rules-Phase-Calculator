@@ -14,8 +14,11 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
-public class GUI {
+import java.io.*;
 
+public class GUI
+{
+    // Debug Flag
     private static final boolean TESTING    = false;
 
     // Constant Fields
@@ -24,23 +27,21 @@ public class GUI {
 
     // Frame Fields
     private static JFrame frame         = new JFrame(FRAME_TITLE);
-    private static JPanel content       = new JPanel(new GridLayout(1, 2));
+    private static JPanel contentPanel  = new JPanel(new GridLayout(1, 2));
 
     // GUI Input Fields
-    private static JPanel input         = new JPanel(new GridLayout(3, 1));
+    private static JPanel inputPanel    = new JPanel(new GridLayout(3, 1));
     private static JTextField trackID   = new JTextField();
     private static JTextField time      = new JTextField();
     private static JButton analyze      = new JButton("Analyze");
 
     // GUI Output Fields
-    private static JPanel output        = new JPanel(new GridLayout(1, 1));
+    private static JPanel outputPanel   = new JPanel(new GridLayout(1, 1));
     private static JTextArea outputText = new JTextArea();
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args)
+    {
 	createGUI();
-	
-
     }
 
     /*
@@ -49,47 +50,52 @@ public class GUI {
      *     as well as the input fields to select the data to
      *     classify.
      */
-    private static void createGUI() {
+    private static void createGUI()
+    {
 
 	// Create the input panel
 	if(TESTING)
-	    input.setBorder(new LineBorder(Color.GREEN));
+	    inputPanel.setBorder(new LineBorder(Color.GREEN));
 	else
-	    input.setBorder(new EmptyBorder(10, 10, 10, 10));
+	    inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
-	JPanel ID = new JPanel(new GridLayout(1, 2));
-	ID.add(new JLabel(IDENTIFIER));
-	ID.add(trackID);
+	// Creates the Panel where the Track ID text field will be placed
+	JPanel idPanel = new JPanel(new GridLayout(1, 2));
+	idPanel.add(new JLabel(IDENTIFIER));
+	idPanel.add(trackID);
 
-	JPanel ti = new JPanel(new GridLayout(1, 2));
-	ti.add(new JLabel("Time: "));
-	ti.add(time);
+	// Creates the Panel where the Time text field will be placed
+	JPanel timePanel = new JPanel(new GridLayout(1, 2));
+	timePanel.add(new JLabel("Time: "));
+	timePanel.add(time);
 
 	// Give the button an action defined elsewhere in this class
-	analyze.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
+	analyze.addActionListener(new ActionListener()
+	    {
+		public void actionPerformed(ActionEvent e)
+		{
 		    buttonAction();
 		}
 	    });
 
-	input.add(ID);
-	input.add(ti);
-	input.add(analyze);
+	inputPanel.add(idPanel);
+	inputPanel.add(timePanel);
+	inputPanel.add(analyze);
 	
 	// Create the output panel
 	if(TESTING)
-	    output.setBorder(new LineBorder(Color.RED));
+	    outputPanel.setBorder(new LineBorder(Color.RED));
 	else
-	    output.setBorder(new EmptyBorder(10, 10, 10, 10));
+	    outputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
 	outputText.setEditable(false);
 	outputText.setBorder(new BevelBorder(BevelBorder.LOWERED));
-	output.add(outputText);
+	outputPanel.add(outputText);
 
 	// Add the input and output panels to the content pane of the frame
-	content.add(input);
-	content.add(output);
-	frame.setContentPane(content);
+	contentPanel.add(inputPanel);
+	contentPanel.add(outputPanel);
+	frame.setContentPane(contentPanel);
 
 	// Set properties of the window containing the interface
 	frame.setSize(400, 150);
@@ -99,8 +105,23 @@ public class GUI {
 
     }
 
-    private static void buttonAction() {
-	outputText.setText(trackID.getText() + " " + time.getText());
+    private static void buttonAction()
+    {
+	try
+	{
+
+	    // Run python portion of project
+	    ProcessBuilder pb = new ProcessBuilder("python", "main.py", "FlightData.txt");
+	    Process p = pb.start();
+	    BufferedReader pythonOutput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+	    // Display python result on output panel
+	    outputText.setText(pythonOutput.readLine());
+	}
+	catch(IOException e)
+	{
+	    e.printStackTrace();
+	}
     }
 
 }
