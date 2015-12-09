@@ -27,11 +27,11 @@ def randomTimeDelta(minmilli=200, maxmilli=1000):
     return timedelta(milliseconds=milli)
 
 def randomDelta(maxdelta=5):
-    return int(round(random.random() * maxdelta))
+    return int(round(random.random() * maxdelta)) * random.choice([-1, 0, 1])
 
 def createDatapoint(timestamp, alt, speed):
     """ Return a tuple (timestamp, alt, speed) """
-    return (timestamp + randomTimeDelta(), alt+randomDelta(), speed+randomDelta())
+    return (timestamp + randomTimeDelta(), alt + randomDelta(), speed + randomDelta())
 
 
 for i in range(100000):
