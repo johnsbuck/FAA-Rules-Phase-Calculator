@@ -21,43 +21,37 @@ def classifyPhaseOfFlight(periods):
         spdMinLoc = 0
         altMaxLoc = 0
 
-        valid = False
-        while not valid:
-            altMinLoc = 0
-            atMaxLoc = 0
-            spdMinLoc = 0
-            altMaxLoc = 0
-            # for each alt and speed in period
-            for j in range(len(periods[i]["alt"])):
-                # starting period
-                if j == 0:
-                    periods[i]["minAlt"] = periods[i]["alt"][j]
-                    periods[i]["minSpd"] = periods[i]["spd"][j]
-                    periods[i]["maxAlt"] = periods[i]["alt"][j]
-                    periods[i]["maxSpd"] = periods[i]["spd"][j]
-                # change minimum altitude
-                if periods[i]["minAlt"] > periods[i]["alt"][j]:
-                    altMinLoc = j
-                    periods[i]["minAlt"] = periods[i]["alt"][j]
-                # change maximum altitude
-                if periods[i]["maxAlt"] < periods[i]["alt"][j]:
-                    altMaxLoc = j
-                    periods[i]["maxAlt"] = periods[i]["alt"][j]
-                # change minimum speed
-                if periods[i]["minSpd"] > periods[i]["spd"][j]:
-                    spdMinLoc = j
-                    periods[i]["minSpd"] = periods[i]["spd"][j]
-                # change maximum speed
-                if periods[i]["maxSpd"] < periods[i]["spd"][j]:
-                    altMaxLoc = j
-                    periods[i]["maxSpd"] = periods[i]["spd"][j]
+        # for each alt and speed in period
+        for j in range(len(periods[i]["alt"])):
+            # starting period
+            if j == 0:
+                periods[i]["minAlt"] = periods[i]["alt"][j]
+                periods[i]["minSpd"] = periods[i]["spd"][j]
+                periods[i]["maxAlt"] = periods[i]["alt"][j]
+                periods[i]["maxSpd"] = periods[i]["spd"][j]
+            # change minimum altitude
+            if periods[i]["minAlt"] > periods[i]["alt"][j]:
+                altMinLoc = j
+                periods[i]["minAlt"] = periods[i]["alt"][j]
+            # change maximum altitude
+            if periods[i]["maxAlt"] < periods[i]["alt"][j]:
+                altMaxLoc = j
+                periods[i]["maxAlt"] = periods[i]["alt"][j]
+            # change minimum speed
+            if periods[i]["minSpd"] > periods[i]["spd"][j]:
+                spdMinLoc = j
+                periods[i]["minSpd"] = periods[i]["spd"][j]
+            # change maximum speed
+            if periods[i]["maxSpd"] < periods[i]["spd"][j]:
+                altMaxLoc = j
+                periods[i]["maxSpd"] = periods[i]["spd"][j]
 
-                # Add averages
-                periods[i]["avgAlt"] += periods[i]["alt"][j]
-                periods[i]["avgSpd"] += periods[i]["spd"][j]
-            # Finish creation of average
-            periods[i]["avgAlt"] = periods[i]["avgAlt"] / len(periods[i]["alt"])
-            periods[i]["avgSpd"] = periods[i]["avgSpd"] / len(periods[i]["spd"])
+            # Add averages
+            periods[i]["avgAlt"] += periods[i]["alt"][j]
+            periods[i]["avgSpd"] += periods[i]["spd"][j]
+        # Finish creation of average
+        periods[i]["avgAlt"] = periods[i]["avgAlt"] / len(periods[i]["alt"])
+        periods[i]["avgSpd"] = periods[i]["avgSpd"] / len(periods[i]["spd"])
 
         # Check rise or fall of altitude
         altDiff = periods[i]["maxAlt"] - periods[i]["minAlt"]
@@ -70,7 +64,7 @@ def classifyPhaseOfFlight(periods):
                 phases[i] = "cruising"
         # High altitude change & positive
         elif altMaxLoc > altMinLoc:
-            phases[i] = "ascending"
+             phases[i] = "ascending"
         # High altitude change & negative
         else:
             phases[i] = "descending"
