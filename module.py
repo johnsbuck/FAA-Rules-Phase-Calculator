@@ -1,3 +1,19 @@
+from __future__ import division
+
+def fiveNumberSummary(lst):
+    '''Construct 5 number summary:
+    first, min, max, average, last
+    '''
+    assert len(lst) > 0, "list must contain values"
+    
+    return {
+            "first": lst[0],
+            "last": lst[-1],
+            "min": min(lst),
+            "max": max(lst),
+            "avg": sum(lst) / len(lst)
+            }
+
 def classifyPhaseOfFlight(periods):
     '''Classifies the phase of flight
 
