@@ -1,4 +1,5 @@
 from __future__ import division
+from pretty import pprint
 
 def fiveNumberSummary(lst):
     '''Construct 5 number summary:
@@ -15,75 +16,42 @@ def fiveNumberSummary(lst):
             }
 
 def classifyPhaseOfFlight(periods):
-    '''Classifies the phase of flight
+    '''Classify each period's phase of flight, and return this list.
 
     Parameters:
         periods - Contains the altitudes and speeds for each period.
-                  List of Dictionary of Lists
+                  List of Lists of Dictionaries 
     '''
-    phases = [None] * len(periods)
 
-    for i in range(len(periods)):
-        periods[i]["maxAlt"] = 0
-        periods[i]["minAlt"] = 0
-        periods[i]["avgAlt"] = 0
-        periods[i]["maxSpd"] = 0
-        periods[i]["minSpd"] = 0
-        periods[i]["avgSpd"] = 0
+    phases = []
 
-        #Location of min and max of alt and speed in period i
-        altMinLoc = 0
-        atMaxLoc = 0
-        spdMinLoc = 0
-        altMaxLoc = 0
+    for period in periods:
+        
+        
+        (timestamps, altitudes, speeds) = zip(*period)
 
-        # for each alt and speed in period
-        for j in range(len(periods[i]["alt"])):
-            # starting period
-            if j == 0:
-                periods[i]["minAlt"] = periods[i]["alt"][j]
-                periods[i]["minSpd"] = periods[i]["spd"][j]
-                periods[i]["maxAlt"] = periods[i]["alt"][j]
-                periods[i]["maxSpd"] = periods[i]["spd"][j]
-            # change minimum altitude
-            if periods[i]["minAlt"] > periods[i]["alt"][j]:
-                altMinLoc = j
-                periods[i]["minAlt"] = periods[i]["alt"][j]
-            # change maximum altitude
-            if periods[i]["maxAlt"] < periods[i]["alt"][j]:
-                altMaxLoc = j
-                periods[i]["maxAlt"] = periods[i]["alt"][j]
-            # change minimum speed
-            if periods[i]["minSpd"] > periods[i]["spd"][j]:
-                spdMinLoc = j
-                periods[i]["minSpd"] = periods[i]["spd"][j]
-            # change maximum speed
-            if periods[i]["maxSpd"] < periods[i]["spd"][j]:
-                altMaxLoc = j
-                periods[i]["maxSpd"] = periods[i]["spd"][j]
+        altitude_summary = fiveNumberSummary(altitudes)
+        speed_summary = fiveNumberSummary(speeds)
 
-            # Add averages
-            periods[i]["avgAlt"] += periods[i]["alt"][j]
-            periods[i]["avgSpd"] += periods[i]["spd"][j]
-        # Finish creation of average
-        periods[i]["avgAlt"] = periods[i]["avgAlt"] / len(periods[i]["alt"])
-        periods[i]["avgSpd"] = periods[i]["avgSpd"] / len(periods[i]["spd"])
+        # Check for weird things like if the max is in the middle, and aircraft goes up and back down
 
-        # Check rise or fall of altitude
-        altDiff = periods[i]["maxAlt"] - periods[i]["minAlt"]
-        if altDiff <= 2:
-            # Low altitude change & low speed
-            if periods[i]["maxSpd"] <= 10:
-                phases[i] = "taxing"
-            # Low altitude & high speed
+        # If there is little altitude difference
+        if abs(altitude_summary["max"] - altitude_summary["min"]) < 2:
+            #If low speed
+            if speed_summary["avg"] <= 10: 
+                phases.append("taxing")
+            else: 
+                phases.append("cruising")
+        else: # Otherwise, large altitude difference
+
+            # Note, this may not be a reliable indicator of whether aircraft is ascending or descending
+            if altitude_summary["first"] < altitude_summary["last"]:
+                phases.append("ascending")
             else:
-                phases[i] = "cruising"
-        # High altitude change & positive
-        elif altMaxLoc > altMinLoc:
-             phases[i] = "ascending"
-        # High altitude change & negative
-        else:
-            phases[i] = "descending"
+                phases.append("descending")
+
+
+        print phases
     return phases
 
 def classifyRuleOfFlight(periods):

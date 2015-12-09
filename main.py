@@ -23,9 +23,8 @@ def callModule(data):
     Parameters:
         data - Dictionary containing other parameters
     '''
-    #module.classifyPhaseOfFlight(data)
-    #print module.fiveNumberSummary([])
-    pprint(restructureToPeriods(data))
+    print module.classifyPhaseOfFlight(data)
+    # pprint(restructureToPeriods(data))
 
 
 
@@ -34,29 +33,21 @@ def restructureToPeriods(data):
     '''Restructure the data so that it consists of one minute intervals
     Input python object structure:
     [
-        {"timestamp": 2000/12/12 12:3456, alt: 300, "speed": 95 },
-        {"timestamp": 2000/12/12 12:3458, alt: 300, "speed": 95 },
-        {"timestamp": 2000/12/12 12:3702, alt: 300, "speed": 95 },
-        {"timestamp": 2000/12/12 12:3704, alt: 300, "speed": 95 },
-        ...
+        { "timestamp": "2015-12-09 02:42:45.107267", "alt": 87, "speed": 16 }, 
+        { "timestamp": "2015-12-09 02:42:46.101267", "alt": 91, "speed": 21 }, 
     ]
+
 
     Output python object structure:
     [
-        [
-            {"timestamp": 2000/12/12 12:34:56, alt: 300, "speed": 95 },
-            {"timestamp": 2000/12/12 12:34:58, alt: 300, "speed": 95 },
-            ...
-        ],
-        [
-            {"timestamp": 2000/12/12 12:3702, alt: 300, "speed": 95 },
-            {"timestamp": 2000/12/12 12:3704, alt: 300, "speed": 95 },
-            ...
-        ],
-        ...
+        1 : 
+            [
+            ("2015-12-09 02:42:45.107267", 87, 16), ("2015-12-09 02:42:46.101267", 91, 21), ...
+            ], 
+        2: ...
     ]
-
     '''
+
     restructured = []
     periodStartTime = datetime.strptime(data[0]["timestamp"], datetimeformat)
     print periodStartTime
@@ -70,7 +61,7 @@ def restructureToPeriods(data):
             temp = []
             periodStartTime = datetime.strptime(i["timestamp"], datetimeformat)
         # append the datapoint regardless 
-        temp.append(i)
+        temp.append(tuple(i.values()))
 
     # Exiting the loop, there may be some left over datapoints.
     if temp:
@@ -81,4 +72,4 @@ def restructureToPeriods(data):
 # START OF SCRIPT
 if len(sys.argv) >= 2:
     if os.path.isfile(sys.argv[1]) and sys.argv[1].endswith('.json'):
-        callModule(importJSONFile(sys.argv[1]))
+        callModule(restructureToPeriods(importJSONFile(sys.argv[1])))
