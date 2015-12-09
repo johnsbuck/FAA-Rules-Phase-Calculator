@@ -50,7 +50,6 @@ def restructureToPeriods(data):
 
     restructured = []
     periodStartTime = datetime.strptime(data[0]["timestamp"], datetimeformat)
-    print periodStartTime
 
     temp = []
     for i in data:

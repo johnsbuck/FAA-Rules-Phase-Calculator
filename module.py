@@ -50,8 +50,6 @@ def classifyPhaseOfFlight(periods):
             else:
                 phases.append("descending")
 
-
-        print phases
     return phases
 
 def classifyRuleOfFlight(periods):
