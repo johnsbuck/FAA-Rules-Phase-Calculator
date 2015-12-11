@@ -23,7 +23,7 @@ def callModule(data):
     Parameters:
         data - Dictionary containing other parameters
     '''
-    print module.classifyPhaseOfFlight(data)
+    print module.phaseClassification(data)
     # pprint(restructureToPeriods(data))
 
 

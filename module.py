@@ -1,5 +1,6 @@
 from __future__ import division
 from pretty import pprint
+import matplotlib.pyplot as plt
 
 def fiveNumberSummary(lst):
     '''Construct 5 number summary:
@@ -15,7 +16,7 @@ def fiveNumberSummary(lst):
             "avg": sum(lst) / len(lst)
             }
 
-def classifyPhaseOfFlight(periods):
+def phaseClassification(periods):
     '''Classify each period's phase of flight, and return this list.
 
     Parameters:
@@ -27,8 +28,10 @@ def classifyPhaseOfFlight(periods):
 
     for period in periods:
         
-        
         (timestamps, altitudes, speeds) = zip(*period)
+
+        plt.plot(altitudes, 'ro')
+        plt.show()
 
         altitude_summary = fiveNumberSummary(altitudes)
         speed_summary = fiveNumberSummary(speeds)
@@ -50,9 +53,11 @@ def classifyPhaseOfFlight(periods):
             else:
                 phases.append("descending")
 
+        #print altitude_summary, speed_summary
+
     return phases
 
-def classifyRuleOfFlight(periods):
+def ruleClassification(periods):
     '''Classifies the rule of flight
 
     Parameters:
