@@ -19,11 +19,13 @@ import java.io.*;
 public class GUI
 {
     // Debug Flag
-    private static final boolean TESTING    = false;
+    private static final boolean TESTING = false;
 
     // Constant Fields
-    private static final String IDENTIFIER  = "Track ID: ";
-    private static final String FRAME_TITLE = "Phase of Flight Calculator";
+    private static final String IDENTIFIER      = "Track ID: ";
+    private static final String FRAME_TITLE     = "Phase of Flight Calculator";
+    private static final String JSON_FILENAME   = "Flight_Data.txt";
+    private static final String PYTHON_FILENAME = "main.py";
 
     // Frame Fields
     private static JFrame frame         = new JFrame(FRAME_TITLE);
@@ -54,10 +56,7 @@ public class GUI
     {
 
 	// Create the input panel
-	if(TESTING)
-	    inputPanel.setBorder(new LineBorder(Color.GREEN));
-	else
-	    inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+	inputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
 	// Creates the Panel where the Track ID text field will be placed
 	JPanel idPanel = new JPanel(new GridLayout(1, 2));
@@ -83,10 +82,7 @@ public class GUI
 	inputPanel.add(analyze);
 	
 	// Create the output panel
-	if(TESTING)
-	    outputPanel.setBorder(new LineBorder(Color.RED));
-	else
-	    outputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+	outputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
 	outputText.setEditable(false);
 	outputText.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -107,21 +103,31 @@ public class GUI
 
     private static void buttonAction()
     {
-	try
-	{
+	String result = executePython();
+	String[] values = result.split(";");
+	String phase = values[0];
+	String rules = values[1];
+	outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
+    }
 
+    private static String executePython()
+    {
+      	try
+	{
 	    // Run python portion of project
-	    ProcessBuilder pb = new ProcessBuilder("python", "main.py", "FlightData.txt");
-	    Process p = pb.start();
+	    ProcessBuilder pb = new ProcessBuilder("python", PYTHON_FILENAME, JSON_FILENAME);
+	    Process p = pb.start();	    
 	    BufferedReader pythonOutput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
-	    // Display python result on output panel
-	    outputText.setText(pythonOutput.readLine());
+	    /* Return the output stream of the called python process
+	     *     as a string to be parsed and displayed
+	     */
+	    return pythonOutput.readLine();
 	}
 	catch(IOException e)
 	{
-	    e.printStackTrace();
+	    return e.getMessage();
 	}
     }
-
+    
 }
