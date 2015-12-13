@@ -1,0 +1,31 @@
+int[] myArray = new int[20];
+//Parses through sequential 20 point arrays to find mode to get rid of bad data points.
+
+public int getMode(int [] myArray)
+{
+  Array.sort(myArray);
+  
+  int counter = 0;
+  int counter1 = 1;
+  int mode;
+  
+  for( int i = 0; i < myArray.length; i++)
+{
+  int checker = myArray[i];
+  for( int j = 0; j < myArray.length; j++)
+{
+  if( checker == myArray[j])
+{
+  counter++;
+}
+  if( counter > counter1)
+{
+  mode = checker;
+  counter = counter1;
+}
+  counter = 0;
+}
+}
+  return mode;
+}
+  
