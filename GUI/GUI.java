@@ -14,7 +14,11 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import java.util.Arrays;
+import java.util.ArrayList;
+
 import java.io.*;
+import java.sql.*;
 
 public class GUI
 {
@@ -26,6 +30,15 @@ public class GUI
     private static final String FRAME_TITLE     = "Phase of Flight Calculator";
     private static final String JSON_FILENAME   = "Flight_Data.txt";
     private static final String PYTHON_FILENAME = "main.py";
+
+    // JDBC Connection Fields
+    private static final String CONNECTION_URL  = "jdbc:oracle:thin:@//localhost:1521/cablocal";
+    private static final String CONNECTION_USER = "uret01";
+    private static final String CONNECTION_PASS = "rowan";
+    private static final String TABLE_NAME      = "ARTS_RH_CLEANED";
+    private static final String ALTITUDE        = "F9_ALTITUDE";
+    private static final String SPEED           = "F10_SPEED";
+    private static final String TIMESTAMP       = "TO_CHAR(, 'HH24:MI:SS')";
 
     // Frame Fields
     private static JFrame frame         = new JFrame(FRAME_TITLE);
@@ -103,11 +116,95 @@ public class GUI
 
     private static void buttonAction()
     {
+	try
+	{
+	    Driver jdbcDriver = new oracle.jdbc.driver.OracleDriver();
+	    DriverManager.registerDriver(jdbcDriver);
+	    Connection con = DriverManager.getConnection(CONNECTION_URL, CONNECTION_USER, CONNECTION_PASS);
+	    Statement selectQuery = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+	    ResultSet queryData = selectQuery.executeQuery("SELECT "
+							   + ALTITUDE + ","
+							   + SPEED + ","
+							   + TIMESTAMP + ","
+							   + " FROM "
+							   + TABLE_NAME);
+
+	    ArrayList<Integer> altitudes = new ArrayList<Integer>();
+	    ArrayList<Integer> speed     = new ArrayList<Integer>();
+	    ArrayList<String> timestamps = new ArrayList<String>();
+	    
+	    int[][] cleaningPeriod = new int[2][20];
+	    String[] cleaningTimes    = new String[20];
+	    for(int i = 0; queryData.next(); i++)
+	    {
+		cleaningPeriod[0][i % 20] = queryData.getInt(ALTITUDE);
+		cleaningPeriod[1][i % 20] = queryData.getInt(SPEED);
+		cleaningTimes[i % 20]     = queryData.getString(TIMESTAMP);
+		if(i % 20 == 19)
+		{
+		    // TODO: Finish actual cleaning of data
+		    int altitudeMode = getMode(cleaningPeriod[0]);
+		    int speedMode    = getMode(cleaningPeriod[1]);
+		    
+		}
+	    }
+
+	    con.close();
+
+	    // TODO: Put values from ArrayLists into a file in proper JSON format
+	    
+
+	}
+	catch(Exception ex)
+	{
+	    if(ex instanceof IOException)
+	    {
+		outputText.setText("IO Issue");
+	    }
+	    else if(ex instanceof SQLException)
+	    {
+		outputText.setText("SQL Problems");
+	    }
+	    else
+	    {
+		outputText.setText("Other Issues");
+	    }
+	}
+
 	String result = executePython();
 	String[] values = result.split(";");
 	String phase = values[0];
 	String rules = values[1];
 	outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
+    }
+
+    private static int getMode(int[] dataPoints)
+    {
+	Arrays.sort(dataPoints);
+
+	int mode      = -1;
+	int prevNum   = -1;
+	int count     = 0;
+	int prevCount = 0;
+	
+	for(int num: dataPoints)
+	{
+	    if(prevNum != num)
+	    {
+		count = 1;
+	    }
+	    else
+	    {
+		count++;
+	    }
+	    prevNum = num;
+	    if(count >= prevCount)
+	    {
+		prevCount = count;
+		mode = prevNum;
+	    }
+	}
+	return mode;
     }
 
     private static String executePython()
