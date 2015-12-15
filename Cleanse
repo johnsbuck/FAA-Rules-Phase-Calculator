@@ -1,4 +1,10 @@
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+ 
+
 int[] myArray = new int[20];
+
 //Parses through sequential 20 point arrays to find mode to get rid of bad data points.
 
 public int getMode(int [] myArray)
@@ -29,3 +35,22 @@ public int getMode(int [] myArray)
   return mode;
 }
   
+//still have to add data to list
+public static void parseAndDelete()
+{
+  List<int> myList = new ArrayList<int>();
+  mylist.add(myArray);
+  int variance = 20;
+  int compare = myList.get(i);
+  
+  for(i = 0; i < myList.size; i++)
+  {
+  myList.get(i) = compare;
+  System.out.println(myList.get(i));
+  }
+  Iterator<String> myIterator = myList.iterator();
+	while (myIterator.hasNext()) {
+	System.out.println(CrunchifyIterator.next());
+  
+  if(myList.get(i+1)  < variance + myList.get(i)) || (
+}
