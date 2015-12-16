@@ -11,13 +11,15 @@ def importJSONFile(filename):
 
     Parameters:
         filename - Name of JSON file to be loaded.
+    Returns:
+        Python object based on JSON file
     '''
     data = json.load(file(filename))
     # pprint(data)
     return data
 
 def callModule(data, time):
-    '''Calls module file
+    '''Calls module file and prints the phaseClassification and ruleClassification
 
     Parameters:
         data - JSON file containing information from aircraft.
