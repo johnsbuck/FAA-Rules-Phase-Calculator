@@ -7,7 +7,7 @@ def fiveNumberSummary(lst):
     first, min, max, average, last
     '''
     assert len(lst) > 0, "list must contain values"
-    
+
     return {
             "first": lst[0],
             "last": lst[-1],
@@ -26,44 +26,41 @@ def phaseClassification(correlatedData, time):
     '''
 
     # Set create periods
-    periods = restructureDataToPeriods(correlatedData, time)
+    period = restructureDataToPeriods(correlatedData, time)
 
     # Start process
-    phases = []
+    phases = "Unknown"
 
-    for period in periods:
-        
-        (timestamps, altitudes, speeds) = zip(*period)
+    (timestamps, altitudes, speeds) = zip(*period)
 
-        plt.plot(altitudes, 'ro')
-        plt.show()
+    plt.plot(altitudes, 'ro')
+    plt.show()
 
-        altitude_summary = fiveNumberSummary(altitudes)
-        speed_summary = fiveNumberSummary(speeds)
+    altitude_summary = fiveNumberSummary(altitudes)
+    speed_summary = fiveNumberSummary(speeds)
 
-        # Check for weird things like if the max is in the middle, and aircraft goes up and back down
+    # Check for weird things like if the max is in the middle, and aircraft goes up and back down
 
-        # If there is little altitude difference
-        if abs(altitude_summary["max"] - altitude_summary["min"]) < 5:
-            #If low speed and low altitude
-            if speed_summary["avg"] <= 10 and altitude_summary["max"] <= 5: 
-                phases.append("Taxi")
-            # High altitude
-            else if altitude_summary["max"] > 5: 
-                phases.append("Cruise")
-            else:
-                phases.append("Unknown")
-        else: # Otherwise, large altitude difference
-            # Note, this may not be a reliable indicator of whether aircraft is ascending or descending
-            if altitude_summary["first"] < altitude_summary["last"]:
-                phases.append("Ascend")
-            else if altitude_summary["first"] > altitude_summary["last"]:
-                phases.append("Descend")
-            else:
-                phases.append("Unknown")
+    # If there is little altitude difference
+    if abs(altitude_summary["max"] - altitude_summary["min"]) < 5:
+        #If low speed and low altitude
+        if speed_summary["avg"] <= 10 and altitude_summary["max"] <= 5:
+            phases = "Taxi"
+        # High altitude
+        else if altitude_summary["max"] > 5:
+            phases = "Cruise"
+        else:
+            phases = "Unknown"
+    else: # Otherwise, large altitude difference
+        # Note, this may not be a reliable indicator of whether aircraft is ascending or descending
+        if altitude_summary["first"] < altitude_summary["last"]:
+            phases = "Ascend"
+        else if altitude_summary["first"] > altitude_summary["last"]:
+            phases = "Descend"
+        else:
+            phases = "Unknown"
 
-        # print altitude_summary, speed_summary
-
+    # print altitude_summary, speed_summary
     return phases
 
 def ruleClassification(correlatedData, time):
@@ -76,34 +73,56 @@ def ruleClassification(correlatedData, time):
     '''
 
     # Set create periods
-    periods = restructureDataToPeriods(correlatedData, time)
+    period = restructureDataToPeriods(correlatedData, time)
 
     # Start process
-    rules = []
-    
-    for period in periods:
-        (timestamps, altitudes, speeds, flightrules) = zip(*period)
+    rules = "Unknown"
 
-        plt.plot(altitudes, 'ro')
-        plt.show()
-        
-        
+    (timestamps, altitudes, speeds, flightrules) = zip(*period)
+    actualDataIndex = 0
+
+    for i in range(timestamps):
+        if timestamp >= time:
+            actualDataIndex = i
+            break
+
+    if flightrules[i].find('FR') > -1:
+        return flightrules[i]
+    elif i > 0 and i < (len(timestamps) - 1)
+            and flightRules[i-1].find('VR') > -1 and flightRules[i+1].find('VR') > -1:
+        if abs(altitudes[i] - altitudes[i-1]) >= abs(altitudes[i] - altitudes[i+1]):
+            return flightrules[i-1]
+        else
+            return flightrules[i+1]
+
+    plt.plot(altitudes, 'ro')
+    plt.show()
+
+    altitude_summary = fiveNumberSummary(altitudes)
+    speed_summary = fiveNumberSummary(speeds)
+
+    if altitude_summary["avg"] >= 30:
+        rules = "VFR"
+    else:
+        rules = "IFR"
+
+    return rules
 
 def restructureToPeriods(data, time):
     '''Restructure the data so that it consists of one minute intervals
     Input python object structure:
     [
-        { "timestamp": "2015-12-09 02:42:45.107267", "alt": 87, "speed": 16 }, 
-        { "timestamp": "2015-12-09 02:42:46.101267", "alt": 91, "speed": 21 }, 
+        { "timestamp": "2015-12-09 02:42:45.107267", "alt": 87, "speed": 16 },
+        { "timestamp": "2015-12-09 02:42:46.101267", "alt": 91, "speed": 21 },
     ]
 
 
     Output python object structure:
     [
-        1 : 
+        1 :
             [
             ("2015-12-09 02:42:45.107267", 87, 16), ("2015-12-09 02:42:46.101267", 91, 21), ...
-            ], 
+            ],
         2: ...
     ]
 
@@ -112,22 +131,28 @@ def restructureToPeriods(data, time):
         time - Timestamp of required information
     '''
 
-    restructured = []
-    periodStartTime = datetime.strptime(data[0]["timestamp"], datetimeformat)
+    restructured = ()
 
+    # For data within time section
+    for i in data:
+        if (time - timedelta(seconds=30)) <= datetime.strptime(i["timestamp"], datetimeformat)
+            and (time + timedelta(seconds=30)) >= datetime.strptime(i["timestamp"], datetimeformat):
+            restructured = (tuple(i.values()))
+
+    """
     temp = []
     for i in data:
         # When the time difference is greater than one minute,
         # we have our period, and start constructing another
         if  (periodStartTime + timedelta(seconds=60)) < datetime.strptime(i["timestamp"], datetimeformat):
-            restructured.append(temp)
+            restructured.append(list(temp))
             temp = []
             periodStartTime = datetime.strptime(i["timestamp"], datetimeformat)
-        # append the datapoint regardless 
+        # append the datapoint regardless
         temp.append(tuple(i.values()))
 
     # Exiting the loop, there may be some left over datapoints.
     if temp:
         restructured.append(temp)
-
+    """
     return restructured
