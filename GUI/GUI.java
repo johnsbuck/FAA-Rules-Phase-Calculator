@@ -178,6 +178,10 @@ public class GUI
 	String rules = values[1];
 	outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
     }
+	
+	private static void test() {
+		
+	}
 
     private static int getMode(int[] dataPoints)
     {
