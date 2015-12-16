@@ -38,7 +38,7 @@ public class GUI
     private static final String TABLE_NAME      = "ARTS_RH_CLEANED";
     private static final String ALTITUDE        = "F9_ALTITUDE";
     private static final String SPEED           = "F10_SPEED";
-    private static final String TIMESTAMP       = "TO_CHAR(, 'HH24:MI:SS')";
+    private static final String TIMESTAMP       = "TO_CHAR(F3_F4_DATETIME, 'HH24:MI:SS:FF')";
 
     // Frame Fields
     private static JFrame frame         = new JFrame(FRAME_TITLE);
@@ -133,6 +133,7 @@ public class GUI
 	    ArrayList<Integer> speed     = new ArrayList<Integer>();
 	    ArrayList<String> timestamps = new ArrayList<String>();
 	    
+	    // TODO: Change cleaning method to 3 point check with endpoint adjustment
 	    int[][] cleaningPeriod = new int[2][20];
 	    String[] cleaningTimes    = new String[20];
 	    for(int i = 0; queryData.next(); i++)
