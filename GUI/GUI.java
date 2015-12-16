@@ -142,7 +142,7 @@ public class GUI
 		{
 			if((|cleaningPeriod[0] - cleaningPeriod[2]|) < (2 * RANGE))
 			{
-				if( (cleaningPeriod[1]) - (cleaningPeriod[0] + cleaningPeriod[2]) / 2) > RANGE)
+				if( |(cleaningPeriod[1]|) - (cleaningPeriod[0] + cleaningPeriod[2]) / 2)| > RANGE)
 				{
 					return false;
 				}
@@ -152,12 +152,16 @@ public class GUI
 		
 		for(int i = 0; i < 3; i++)
 		{
+			int[][] nums = new int[2][3];
 			queryData.next();
 			cleaningPeriod[0][i] = queryData.getInt(ALTITUDE);
 			cleaningPeriod[0][i] = queryData.getInt(SPEED);
 			cleaningTimes[i]     = queryData.getString(TIMESTAMP);
 			
-			if( queryData.next()
+			if( queryData.next().isValidData())
+			{
+				nums.add(queryData.next());
+			}	
 		}
 	    for(int i = 0; queryData.next(); i++)
 	    {
