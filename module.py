@@ -8,6 +8,16 @@ datetimeformat = "%Y-%m-%d %H:%M:%S.%f" # 2015-12-09 01:18:41.891210
 def fiveNumberSummary(lst):
     '''Construct 5 number summary:
     first, min, max, average, last
+
+    Parameters:
+        List of Integers
+    Returns:
+        List of 5 Integers -
+            first: First value
+            min: Smallest value
+            max: Largest value
+            avg: The average of all values
+            last: Last value
     '''
     assert len(lst) > 0, "list must contain values"
 
@@ -26,6 +36,9 @@ def phaseClassification(correlatedData, time):
         correlatedData - Data containing details on
                             Timestamps, Altitude, and Speed.
         time - Timestamp of current time being seeked.
+    Return:
+        str - Phase of Flight described as "Taxi", "Cruise", "Ascend", "Descend",
+                or "Unknown".
     '''
 
     # Set create periods
@@ -77,6 +90,8 @@ def ruleClassification(correlatedData, time):
         correlatedData - Data containing details on
                             Timestamps, Altitude, and Speed.
         time - Timestamp of current time being seeked.
+    Returns:
+        str - Rule of Flight described as "IFR", "VFR", or "Unknown".
     '''
 
     # Set create periods
@@ -126,7 +141,9 @@ def ruleClassification(correlatedData, time):
     return rules
 
 def restructureDataToPeriods(data, time):
-    '''Restructure the data so that it consists of one minute intervals
+    '''Restructure the data so that it consists of data 30 seconds before the
+    time given, and 30 seconds after the time given.
+    
     Input python object structure:
     [
         { "timestamp": "2015-12-09 02:42:45.107267", "alt": 87, "speed": 16 },
@@ -137,15 +154,15 @@ def restructureDataToPeriods(data, time):
     Output python object structure:
     [
         1 :
-            [
             ("2015-12-09 02:42:45.107267", 87, 16), ("2015-12-09 02:42:46.101267", 91, 21), ...
-            ],
         2: ...
     ]
 
     Parameters:
         data - Data containing information on aircraft.
         time - Timestamp of required information
+    Returns:
+        List of tuples
     '''
 
     formatTime = datetime.strptime(time, datetimeformat)
@@ -160,20 +177,4 @@ def restructureDataToPeriods(data, time):
             and (formatTime + timedelta(seconds=30)) >= datetime.strptime(i["timestamp"], datetimeformat):
             restructured.append(tuple(i.values()))
 
-    """
-    temp = []
-    for i in data:
-        # When the time difference is greater than one minute,
-        # we have our period, and start constructing another
-        if  (periodStartTime + timedelta(seconds=60)) < datetime.strptime(i["timestamp"], datetimeformat):
-            restructured.append(list(temp))
-            temp = []
-            periodStartTime = datetime.strptime(i["timestamp"], datetimeformat)
-        # append the datapoint regardless
-        temp.append(tuple(i.values()))
-
-    # Exiting the loop, there may be some left over datapoints.
-    if temp:
-        restructured.append(temp)
-    """
     return restructured
