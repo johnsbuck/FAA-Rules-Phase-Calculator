@@ -16,19 +16,17 @@ def importJSONFile(filename):
     # pprint(data)
     return data
 
-def callModule(data):
+def callModule(data, time):
     '''Calls module file
 
     Parameters:
         data - JSON file containing information from aircraft.
     '''
 
-    print "test"
-    print module.phaseClassification(importJSONFile(data), "2015-12-16 03:30:41.944000")
-    # pprint(restructureToPeriods(data))
-    # print module.ruleClassification(importJSONFile(data))
+    print module.phaseClassification(importJSONFile(data), time)
+    print module.ruleClassification(importJSONFile(data), time)
 
 # START OF SCRIPT
-if len(sys.argv) >= 2:
+if len(sys.argv) >= 3:
     if os.path.isfile(sys.argv[1]) and sys.argv[1].endswith('.json'):
-        callModule(sys.argv[1])
+        callModule(sys.argv[1], sys.argv[2])

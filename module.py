@@ -34,6 +34,8 @@ def phaseClassification(correlatedData, time):
     # Start process
     phases = "Unknown"
 
+    if len(period) == 0:
+        return phases
     (timestamps, altitudes, speeds) = zip(*period)
 
     # plt.plot(altitudes, 'ro')
@@ -47,9 +49,9 @@ def phaseClassification(correlatedData, time):
     # If there is little altitude difference
     if abs(altitudeSummary["first"] - altitudeSummary["last"]) <= 5:
         #If low speed and low altitude
-        if speedSummary["avg"] <= 10 and altitudeSummary["max"] <= 5:
+        if speedSummary["avg"] <= 100 and altitudeSummary["max"] <= 5:
             phases = "Taxi"
-        elif altitudeSummary["max"] >= 10:
+        elif abs(altitudeSummary["max"] - altitudeSummary["min"]) <= 5:
             phases = "Cruise"
         else:
             phases = "Unknown"
@@ -62,8 +64,8 @@ def phaseClassification(correlatedData, time):
         else:
             phases = "Unknown"
 
-    print altitudeSummary
-    print altitudes
+    # print altitudeSummary
+    # print altitudes
 
     # print altitudeSummary, speedSummary
     return phases
@@ -83,25 +85,27 @@ def ruleClassification(correlatedData, time):
     # Start process
     rules = "Unknown"
 
-    (timestamps, altitudes, speeds, flightrules) = zip(*period)
-    actualDataIndex = 0
+    if len(period) == 0:
+        return rules
+    elif "flightrules" in period[0]:
+        (timestamps, altitudes, speeds, flightrules) = zip(*period)
+        actualDataIndex = 0
 
-    for i in range(timestamps):
-        if timestamp >= time:
-            actualDataIndex = i
-            break
+        for i in range(timestamps):
+            if timestamp >= time:
+                actualDataIndex = i
+                break
 
-    if flightrules[i].find('FR') > -1:
-        return flightrules[i]
-    elif i > 0 and i < (len(timestamps) - 1) \
-            and flightRules[i-1].find('FR') > -1 and flightRules[i+1].find('FR') > -1:
-        if abs(altitudes[i] - altitudes[i-1]) >= abs(altitudes[i] - altitudes[i+1]):
-            return flightrules[i-1]
-        else:
-            return flightrules[i+1]
-
-    # plt.plot(altitudes, 'ro')
-    # plt.show()
+        if flightrules[i].find('FR') > -1:
+            return flightrules[i]
+        elif i > 0 and i < (len(timestamps) - 1) \
+                and flightRules[i-1].find('FR') > -1 and flightRules[i+1].find('FR') > -1:
+            if abs(altitudes[i] - altitudes[i-1]) >= abs(altitudes[i] - altitudes[i+1]):
+                return flightrules[i-1]
+            else:
+                return flightrules[i+1]
+    else:
+        (timestamps, altitudes, speeds) = zip(*period)
 
     altitudeSummary = fiveNumberSummary(altitudes)
     speedSummary = fiveNumberSummary(speeds)
@@ -114,6 +118,10 @@ def ruleClassification(correlatedData, time):
         rules = "IFR"
     else:
         rules = "Unknown"
+
+    # print int(5 * round(float(altitudeSummary["avg"])/5))
+    # print altitudeSummary
+    # print altitudes
 
     return rules
 
@@ -150,7 +158,6 @@ def restructureDataToPeriods(data, time):
             i["timestamp"] += '.000000'
         if (formatTime - timedelta(seconds=30)) <= datetime.strptime(i["timestamp"], datetimeformat) \
             and (formatTime + timedelta(seconds=30)) >= datetime.strptime(i["timestamp"], datetimeformat):
-            print i["timestamp"]
             restructured.append(tuple(i.values()))
 
     """
@@ -169,6 +176,4 @@ def restructureDataToPeriods(data, time):
     if temp:
         restructured.append(temp)
     """
-
-    print restructured
     return restructured
