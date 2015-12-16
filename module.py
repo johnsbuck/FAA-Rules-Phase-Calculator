@@ -39,34 +39,33 @@ def phaseClassification(correlatedData, time):
     # plt.plot(altitudes, 'ro')
     # plt.show()
 
-    altitude_summary = fiveNumberSummary(altitudes)
-    speed_summary = fiveNumberSummary(speeds)
+    altitudeSummary = fiveNumberSummary(altitudes)
+    speedSummary = fiveNumberSummary(speeds)
 
     # Check for weird things like if the max is in the middle, and aircraft goes up and back down
-    
+
     # If there is little altitude difference
-    if abs(altitude_summary["first"] - altitude_summary["last"]) < 5:
+    if abs(altitudeSummary["first"] - altitudeSummary["last"]) <= 5:
         #If low speed and low altitude
-        if speed_summary["avg"] <= 10 and altitude_summary["max"] <= 5:
+        if speedSummary["avg"] <= 10 and altitudeSummary["max"] <= 5:
             phases = "Taxi"
-        # High altitude
-        elif altitude_summary["max"] > 5:
+        elif altitudeSummary["max"] >= 10:
             phases = "Cruise"
         else:
             phases = "Unknown"
     else: # Otherwise, large altitude difference
         # Note, this may not be a reliable indicator of whether aircraft is ascending or descending
-        if altitude_summary["first"] < altitude_summary["last"]:
+        if altitudeSummary["first"] < altitudeSummary["last"]:
             phases = "Ascend"
-        elif altitude_summary["first"] > altitude_summary["last"]:
+        elif altitudeSummary["first"] > altitudeSummary["last"]:
             phases = "Descend"
         else:
             phases = "Unknown"
 
-    print altitude_summary
+    print altitudeSummary
     print altitudes
 
-    # print altitude_summary, speed_summary
+    # print altitudeSummary, speedSummary
     return phases
 
 def ruleClassification(correlatedData, time):
@@ -95,7 +94,7 @@ def ruleClassification(correlatedData, time):
     if flightrules[i].find('FR') > -1:
         return flightrules[i]
     elif i > 0 and i < (len(timestamps) - 1) \
-            and flightRules[i-1].find('VR') > -1 and flightRules[i+1].find('VR') > -1:
+            and flightRules[i-1].find('FR') > -1 and flightRules[i+1].find('FR') > -1:
         if abs(altitudes[i] - altitudes[i-1]) >= abs(altitudes[i] - altitudes[i+1]):
             return flightrules[i-1]
         else:
@@ -104,13 +103,17 @@ def ruleClassification(correlatedData, time):
     # plt.plot(altitudes, 'ro')
     # plt.show()
 
-    altitude_summary = fiveNumberSummary(altitudes)
-    speed_summary = fiveNumberSummary(speeds)
+    altitudeSummary = fiveNumberSummary(altitudes)
+    speedSummary = fiveNumberSummary(speeds)
 
-    if altitude_summary["avg"] >= 30:
+    flightApprox = int(5 * round(float(altitudeSummary["avg"])/5)) % 10
+
+    if flightApprox == 5 or altitudeSummary["avg"] == 0:
         rules = "VFR"
-    else:
+    elif flightApprox == 0:
         rules = "IFR"
+    else:
+        rules = "Unknown"
 
     return rules
 
