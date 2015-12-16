@@ -3,12 +3,8 @@
 import json
 import os.path
 import sys
-from pretty import pprint
 
 import module
-from datetime import timedelta, datetime
-
-datetimeformat = "%Y-%m-%d %H:%M:%S.%f" # 2015-12-09 01:18:41.891210
 
 def importJSONFile(filename):
     '''Imports data from file specified in commandline argument 1
@@ -26,9 +22,11 @@ def callModule(data):
     Parameters:
         data - JSON file containing information from aircraft.
     '''
-    print module.phaseClassification(importJSONFile(data))
+
+    print "test"
+    print module.phaseClassification(importJSONFile(data), "2015-12-16 03:30:41.944000")
     # pprint(restructureToPeriods(data))
-    print module.ruleClassification(importJSONFile(data))
+    # print module.ruleClassification(importJSONFile(data))
 
 # START OF SCRIPT
 if len(sys.argv) >= 2:

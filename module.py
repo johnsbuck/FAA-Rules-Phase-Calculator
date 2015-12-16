@@ -1,6 +1,9 @@
 from __future__ import division
-from pretty import pprint
-import matplotlib.pyplot as plt
+# from pretty import pprint
+# import matplotlib.pyplot as plt
+from datetime import timedelta, datetime
+
+datetimeformat = "%Y-%m-%d %H:%M:%S.%f" # 2015-12-09 01:18:41.891210
 
 def fiveNumberSummary(lst):
     '''Construct 5 number summary:
@@ -33,21 +36,21 @@ def phaseClassification(correlatedData, time):
 
     (timestamps, altitudes, speeds) = zip(*period)
 
-    plt.plot(altitudes, 'ro')
-    plt.show()
+    # plt.plot(altitudes, 'ro')
+    # plt.show()
 
     altitude_summary = fiveNumberSummary(altitudes)
     speed_summary = fiveNumberSummary(speeds)
 
     # Check for weird things like if the max is in the middle, and aircraft goes up and back down
-
+    
     # If there is little altitude difference
-    if abs(altitude_summary["max"] - altitude_summary["min"]) < 5:
+    if abs(altitude_summary["first"] - altitude_summary["last"]) < 5:
         #If low speed and low altitude
         if speed_summary["avg"] <= 10 and altitude_summary["max"] <= 5:
             phases = "Taxi"
         # High altitude
-        else if altitude_summary["max"] > 5:
+        elif altitude_summary["max"] > 5:
             phases = "Cruise"
         else:
             phases = "Unknown"
@@ -55,10 +58,13 @@ def phaseClassification(correlatedData, time):
         # Note, this may not be a reliable indicator of whether aircraft is ascending or descending
         if altitude_summary["first"] < altitude_summary["last"]:
             phases = "Ascend"
-        else if altitude_summary["first"] > altitude_summary["last"]:
+        elif altitude_summary["first"] > altitude_summary["last"]:
             phases = "Descend"
         else:
             phases = "Unknown"
+
+    print altitude_summary
+    print altitudes
 
     # print altitude_summary, speed_summary
     return phases
@@ -88,15 +94,15 @@ def ruleClassification(correlatedData, time):
 
     if flightrules[i].find('FR') > -1:
         return flightrules[i]
-    elif i > 0 and i < (len(timestamps) - 1)
+    elif i > 0 and i < (len(timestamps) - 1) \
             and flightRules[i-1].find('VR') > -1 and flightRules[i+1].find('VR') > -1:
         if abs(altitudes[i] - altitudes[i-1]) >= abs(altitudes[i] - altitudes[i+1]):
             return flightrules[i-1]
-        else
+        else:
             return flightrules[i+1]
 
-    plt.plot(altitudes, 'ro')
-    plt.show()
+    # plt.plot(altitudes, 'ro')
+    # plt.show()
 
     altitude_summary = fiveNumberSummary(altitudes)
     speed_summary = fiveNumberSummary(speeds)
@@ -108,7 +114,7 @@ def ruleClassification(correlatedData, time):
 
     return rules
 
-def restructureToPeriods(data, time):
+def restructureDataToPeriods(data, time):
     '''Restructure the data so that it consists of one minute intervals
     Input python object structure:
     [
@@ -131,13 +137,18 @@ def restructureToPeriods(data, time):
         time - Timestamp of required information
     '''
 
-    restructured = ()
+    formatTime = datetime.strptime(time, datetimeformat)
+
+    restructured = []
 
     # For data within time section
     for i in data:
-        if (time - timedelta(seconds=30)) <= datetime.strptime(i["timestamp"], datetimeformat)
-            and (time + timedelta(seconds=30)) >= datetime.strptime(i["timestamp"], datetimeformat):
-            restructured = (tuple(i.values()))
+        if i["timestamp"].find('.') <= -1:
+            i["timestamp"] += '.000000'
+        if (formatTime - timedelta(seconds=30)) <= datetime.strptime(i["timestamp"], datetimeformat) \
+            and (formatTime + timedelta(seconds=30)) >= datetime.strptime(i["timestamp"], datetimeformat):
+            print i["timestamp"]
+            restructured.append(tuple(i.values()))
 
     """
     temp = []
@@ -155,4 +166,6 @@ def restructureToPeriods(data, time):
     if temp:
         restructured.append(temp)
     """
+
+    print restructured
     return restructured

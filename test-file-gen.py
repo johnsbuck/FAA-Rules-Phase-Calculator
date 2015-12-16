@@ -11,7 +11,7 @@
 import json
 import random
 from datetime import date, time, datetime, timedelta
-from pretty import pprint
+# from pretty import pprint
 
 
 # Global variables
