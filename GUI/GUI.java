@@ -30,6 +30,7 @@ public class GUI
     private static final String FRAME_TITLE     = "Phase of Flight Calculator";
     private static final String JSON_FILENAME   = "Flight_Data.txt";
     private static final String PYTHON_FILENAME = "main.py";
+	private static final int    RANGE           = 10;
 
     // JDBC Connection Fields
     private static final String CONNECTION_URL  = "jdbc:oracle:thin:@//localhost:1521/cablocal";
@@ -134,10 +135,43 @@ public class GUI
 	    ArrayList<String> timestamps = new ArrayList<String>();
 	    
 	    // TODO: Change cleaning method to 3 point check with endpoint adjustment
-	    int[][] cleaningPeriod = new int[2][20];
-	    String[] cleaningTimes    = new String[20];
+	    int[][] cleaningPeriod = new int[2][3];
+	    String[] cleaningTimes    = new String[3];
+		
+		public static boolean isValidData(cleaningPeriod[], cleaningTimes[])
+		{
+			if((|cleaningPeriod[0] - cleaningPeriod[2]|) < (2 * RANGE))
+			{
+				if( (cleaningPeriod[1]) - (cleaningPeriod[0] + cleaningPeriod[2]) / 2) > RANGE)
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+		
+		for(int i = 0; i < 3; i++)
+		{
+			queryData.next();
+			cleaningPeriod[0][i] = queryData.getInt(ALTITUDE);
+			cleaningPeriod[0][i] = queryData.getInt(SPEED);
+			cleaningTimes[i]     = queryData.getString(TIMESTAMP);
+			
+			if( queryData.next()
+		}
 	    for(int i = 0; queryData.next(); i++)
 	    {
+			if( isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
+			{
+				add cleaningPeriod[0][1] to altitudes;
+				add cleaningPeriod[1][1] to speed;
+				add cleaningTimes[1] to timestamps;
+				
+				cleaningPeriod[0][2] == cleaningPeriod[0][1];
+				cleaningPeriod[1][2] == cleaningPeriod[1][1];
+				cleaningPeriod[1]
+			}
+			
 		cleaningPeriod[0][i % 20] = queryData.getInt(ALTITUDE);
 		cleaningPeriod[1][i % 20] = queryData.getInt(SPEED);
 		cleaningTimes[i % 20]     = queryData.getString(TIMESTAMP);
