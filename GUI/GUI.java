@@ -143,7 +143,7 @@ public class GUI
 		cleaningTimes[i % 20]     = queryData.getString(TIMESTAMP);
 		if(i % 20 == 19)
 		{
-		    // TODO: Finish actual cleaning of data
+		    
 		    int altitudeMode = getMode(cleaningPeriod[0]);
 		    int speedMode    = getMode(cleaningPeriod[1]);
 		    
