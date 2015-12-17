@@ -115,7 +115,7 @@ def ruleClassification(correlatedData, time):
             return flightrules[i]
         elif i > 0 and i < (len(timestamps) - 1) \
                 and flightRules[i-1].find('FR') > -1 and flightRules[i+1].find('FR') > -1:
-            if abs(altitudes[i] - altitudes[i-1]) >= abs(altitudes[i] - altitudes[i+1]):
+            if abs(altitudes[i] - altitudes[i-1]) <= abs(altitudes[i] - altitudes[i+1]):
                 return flightrules[i-1]
             else:
                 return flightrules[i+1]
@@ -143,7 +143,7 @@ def ruleClassification(correlatedData, time):
 def restructureDataToPeriods(data, time):
     '''Restructure the data so that it consists of data 30 seconds before the
     time given, and 30 seconds after the time given.
-    
+
     Input python object structure:
     [
         { "timestamp": "2015-12-09 02:42:45.107267", "alt": 87, "speed": 16 },
