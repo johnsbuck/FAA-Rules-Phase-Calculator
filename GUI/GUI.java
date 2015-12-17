@@ -136,60 +136,40 @@ public class GUI
 	    ArrayList<Integer> speed     = new ArrayList<Integer>();
 	    ArrayList<String> timestamps = new ArrayList<String>();
 	    
-	    // TODO: Change cleaning method to 3 point check with endpoint adjustment
 	    int[][] cleaningPeriod = new int[2][3];
-	    String[] cleaningTimes    = new String[3];
-		
-		public static boolean isValidData(cleaningPeriod[], cleaningTimes[])
-		{
-			if((|cleaningPeriod[0] - cleaningPeriod[2]|) < (2 * RANGE))
-			{
-				if( |(cleaningPeriod[1]|) - (cleaningPeriod[0] + cleaningPeriod[2]) / 2)| > RANGE)
-				{
-					return false;
-				}
-			}
-			return true;
-		}
-		
-		for(int i = 0; i < 3; i++)
-		{
-			int[][] nums = new int[2][3];
-			queryData.next();
-			cleaningPeriod[0][i] = queryData.getInt(ALTITUDE);
-			cleaningPeriod[0][i] = queryData.getInt(SPEED);
-			cleaningTimes[i]     = queryData.getString(TIMESTAMP);
-			
-			if( queryData.next().isValidData())
-			{
-				nums.add(queryData.next());
-			}	
-		}
-	    for(int i = 0; queryData.next(); i++)
+	    String[] cleaningTimes = new String[3];
+
+	    for(int i = 0; i < 3; i++)
 	    {
-			if( isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
-			{
-				add cleaningPeriod[0][1] to altitudes;
-				add cleaningPeriod[1][1] to speed;
-				add cleaningTimes[1] to timestamps;
-				
-				cleaningPeriod[0][2] == cleaningPeriod[0][1];
-				cleaningPeriod[1][2] == cleaningPeriod[1][1];
-				cleaningPeriod[1]
-			}
-			
-		cleaningPeriod[0][i % 20] = queryData.getInt(ALTITUDE);
-		cleaningPeriod[1][i % 20] = queryData.getInt(SPEED);
-		cleaningTimes[i % 20]     = queryData.getString(TIMESTAMP);
-		if(i % 20 == 19)
-		{
-		    
-		    int altitudeMode = getMode(cleaningPeriod[0]);
-		    int speedMode    = getMode(cleaningPeriod[1]);
-		    
-		}
+		queryData.next();
+		cleaningPeriod[0][i] = queryData.getInt(ALTITUDE);
+		cleaningPeriod[1][i] = queryData.getInt(SPEED);
+		cleaningTimes[i]     = queryData.getString(TIMESTAMP);
 	    }
 
+	    do
+	    {
+		if(isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
+		{
+		    altitudes.add(cleaningPeriod[0][1]);
+		    speed.add(cleaningPeriod[1][1]);
+		    timestamps.add(cleaningTimes[1]);
+		}
+		
+		// Shift data window one element over
+		cleaningPeriod[0][0] = cleaningPeriod[0][1];
+		cleaningPeriod[1][0] = cleaningPeriod[1][1];
+		cleaningTimes[0]     = cleaningTimes[1];
+		cleaningPeriod[0][1] = cleaningPeriod[0][2];
+		cleaningPeriod[1][1] = cleaningPeriod[1][2];
+		cleaningTimes[1]     = cleaningTimes[2];
+		cleaningPeriod[0][1] = queryData.getInt(ALTITUDE);
+		cleaningPeriod[1][1] = queryData.getInt(SPEED);
+		cleaningTimes[2]     = queryData.getString(TIMESTAMP);
+
+	    } while(queryData.next());
+	    
+	
 	    con.close();
 
 	    // TODO: Put values from ArrayLists into a file in proper JSON format
@@ -205,6 +185,7 @@ public class GUI
 	    else if(ex instanceof SQLException)
 	    {
 		outputText.setText("SQL Problems");
+		ex.printStackTrace();
 	    }
 	    else
 	    {
@@ -219,37 +200,16 @@ public class GUI
 	outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
     }
 	
-	private static void test() {
-		
-	}
-
-    private static int getMode(int[] dataPoints)
+    public static boolean isValidData(int[] threePoints)
     {
-	Arrays.sort(dataPoints);
-
-	int mode      = -1;
-	int prevNum   = -1;
-	int count     = 0;
-	int prevCount = 0;
-	
-	for(int num: dataPoints)
+	if(Math.abs(threePoints[0] - threePoints[2]) < 2 * VARIANCE)
 	{
-	    if(prevNum != num)
+	    if(Math.abs(threePoints[1] - ((threePoints[0] + threePoints[2]) / 2)) > VARIANCE)
 	    {
-		count = 1;
-	    }
-	    else
-	    {
-		count++;
-	    }
-	    prevNum = num;
-	    if(count >= prevCount)
-	    {
-		prevCount = count;
-		mode = prevNum;
+		return false;
 	    }
 	}
-	return mode;
+	return true;
     }
 
     private static String executePython()
