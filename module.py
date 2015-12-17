@@ -3,6 +3,8 @@ from __future__ import division
 # import matplotlib.pyplot as plt
 from datetime import timedelta, datetime
 
+import json
+
 datetimeformat = "%Y-%m-%d %H:%M:%S.%f" # 2015-12-09 01:18:41.891210
 
 def fiveNumberSummary(lst):
@@ -107,14 +109,14 @@ def ruleClassification(correlatedData, time):
         actualDataIndex = 0
 
         for i in range(timestamps):
-            if timestamp >= time:
+            if i >= time:
                 actualDataIndex = i
                 break
 
         if flightrules[i].find('FR') > -1:
             return flightrules[i]
         elif i > 0 and i < (len(timestamps) - 1) \
-                and flightRules[i-1].find('FR') > -1 and flightRules[i+1].find('FR') > -1:
+                and flightrules[i-1].find('FR') > -1 and flightrules[i+1].find('FR') > -1:
             if abs(altitudes[i] - altitudes[i-1]) <= abs(altitudes[i] - altitudes[i+1]):
                 return flightrules[i-1]
             else:
@@ -178,3 +180,26 @@ def restructureDataToPeriods(data, time):
             restructured.append(tuple(i.values()))
 
     return restructured
+
+def checkData(data):
+    ''' Redundancy check integrity of data passed in through JSON
+
+        Remove bad entries by checking for sudden jumps in speed and altitude that do not correlate
+        to surrounding entries.
+
+    Parameters:
+        data - a set of data points from input
+    '''
+
+    # Set threshold to determine unusable entries
+    ALT_THRESH = 5          # altitude is in hundred feet
+    SPD_THRESH = 100        # speed is in feet/s
+
+    print str(len(data)) + " entries"
+    for i in range(len(data)):
+        removed = []
+        if data[i]["alt"] == 0 and i > 0 and \
+                ( (abs(data[i-1]["alt"] - data[i]["alt"]) >= ALT_THRESH) or \
+                      abs(data[i]["speed"] - data[i-1]["speed"]) >= SPD_THRESH ):
+            print "Removed: " + str(data[i]["alt"]) + ". Entry #" + str(i)
+            data.remove(data[i])
