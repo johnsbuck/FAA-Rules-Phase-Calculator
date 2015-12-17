@@ -9,6 +9,8 @@
  * @author: Nick LaPosta - lapost48
  */
 
+import com.google.gson.Gson;
+
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -131,10 +133,8 @@ public class GUI
 							   + TABLE_NAME
 							   + " WHERE AC_ID="
 							   + trackID.getText());
-
-	    ArrayList<Integer> altitudes = new ArrayList<Integer>();
-	    ArrayList<Integer> speed     = new ArrayList<Integer>();
-	    ArrayList<String> timestamps = new ArrayList<String>();
+	    
+	    ArrayList<DataPoint> dataPoints = new ArrayList<DataPoint>();
 	    
 	    int[][] cleaningPeriod = new int[2][3];
 	    String[] cleaningTimes = new String[3];
@@ -151,9 +151,8 @@ public class GUI
 	    {
 		if(isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
 		{
-		    altitudes.add(cleaningPeriod[0][1]);
-		    speed.add(cleaningPeriod[1][1]);
-		    timestamps.add(cleaningTimes[1]);
+		    DataPoint dp = new DataPoint(cleaningTimes[1], cleaningPeriod[1][1], cleaningPeriod[0][1]);
+		    dataPoints.add(dp);
 		}
 		
 		// Shift data window one element over
@@ -171,10 +170,24 @@ public class GUI
 	    
 	
 	    con.close();
-
-	    // TODO: Put values from ArrayLists into a file in proper JSON format
 	    
+	    Gson gson = new Gson();
+	    String fileString = gson.toJson(dataPoints.toArray());
+	    if(TESTING)
+	    {
+		outputText.setText(fileString);
+	    }
 
+	    File jsonFile = new File(JSON_FILENAME);
+	    if(jsonFile.exists())
+	    {
+		jsonFile.delete();
+	    }
+	    jsonFile.createNewFile();
+
+	    PrintWriter writer = new PrintWriter(JSON_FILENAME);
+	    writer.println(fileString);
+	    writer.close();
 	}
 	catch(Exception ex)
 	{
