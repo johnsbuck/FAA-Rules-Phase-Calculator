@@ -1,3 +1,11 @@
+/*
+ * Container object to hold the three points of data from each row
+ *     of the database that we want to send to the clasifier through
+ *     a JSON file.
+ *
+ * @author Nick LaPosta - lapost48
+ */
+
 public class DataPoint
 {
 

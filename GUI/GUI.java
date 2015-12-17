@@ -7,6 +7,7 @@
  *     of the python module that will do the classification.
  *
  * @author: Nick LaPosta - lapost48
+ * @author: Eric Oliver - EricOliver
  */
 
 import com.google.gson.Gson;
@@ -121,8 +122,11 @@ public class GUI
     {
 	try
 	{
+	    // Load JDBC drivers for connection to the database
 	    Driver jdbcDriver = new oracle.jdbc.driver.OracleDriver();
 	    DriverManager.registerDriver(jdbcDriver);
+
+	    // Create the database connection and make a query that will give us all the data for a single aircraft
 	    Connection con = DriverManager.getConnection(CONNECTION_URL, CONNECTION_USER, CONNECTION_PASS);
 	    Statement selectQuery = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 	    ResultSet queryData = selectQuery.executeQuery("SELECT "
@@ -134,11 +138,13 @@ public class GUI
 							   + " WHERE AC_ID="
 							   + trackID.getText());
 	    
+	    // Do a minimal clean of the data to remove large spikes
 	    ArrayList<DataPoint> dataPoints = new ArrayList<DataPoint>();
 	    
 	    int[][] cleaningPeriod = new int[2][3];
 	    String[] cleaningTimes = new String[3];
 
+	    // Pre-initialize data window
 	    for(int i = 0; i < 3; i++)
 	    {
 		queryData.next();
@@ -147,30 +153,42 @@ public class GUI
 		cleaningTimes[i]     = queryData.getString(TIMESTAMP);
 	    }
 
+	    // Add middle data point to list containing the good data that will be sent to the clasifier
 	    do
 	    {
 		if(isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
 		{
 		    DataPoint dp = new DataPoint(cleaningTimes[1], cleaningPeriod[1][1], cleaningPeriod[0][1]);
 		    dataPoints.add(dp);
+
+		    // Shift data window one element over
+		    cleaningPeriod[0][0] = cleaningPeriod[0][1];
+		    cleaningPeriod[1][0] = cleaningPeriod[1][1];
+		    cleaningTimes[0]     = cleaningTimes[1];
+		    cleaningPeriod[0][1] = cleaningPeriod[0][2];
+		    cleaningPeriod[1][1] = cleaningPeriod[1][2];
+		    cleaningTimes[1]     = cleaningTimes[2];
+		    cleaningPeriod[0][1] = queryData.getInt(ALTITUDE);
+		    cleaningPeriod[1][1] = queryData.getInt(SPEED);
+		    cleaningTimes[2]     = queryData.getString(TIMESTAMP);	      
 		}
-		
-		// Shift data window one element over
-		cleaningPeriod[0][0] = cleaningPeriod[0][1];
-		cleaningPeriod[1][0] = cleaningPeriod[1][1];
-		cleaningTimes[0]     = cleaningTimes[1];
-		cleaningPeriod[0][1] = cleaningPeriod[0][2];
-		cleaningPeriod[1][1] = cleaningPeriod[1][2];
-		cleaningTimes[1]     = cleaningTimes[2];
-		cleaningPeriod[0][1] = queryData.getInt(ALTITUDE);
-		cleaningPeriod[1][1] = queryData.getInt(SPEED);
-		cleaningTimes[2]     = queryData.getString(TIMESTAMP);
+		else
+		{	     
+		    // Shift data window one element over while removing the bad data point
+		    cleaningPeriod[0][1] = cleaningPeriod[0][2];
+		    cleaningPeriod[1][1] = cleaningPeriod[1][2];
+		    cleaningTimes[1]     = cleaningTimes[2];
+		    cleaningPeriod[0][1] = queryData.getInt(ALTITUDE);
+		    cleaningPeriod[1][1] = queryData.getInt(SPEED);
+		    cleaningTimes[2]     = queryData.getString(TIMESTAMP);
+		}
 
 	    } while(queryData.next());
 	    
-	
+	    // Close JDBC connection
 	    con.close();
 	    
+	    // Convert the list of DataPoint's to a JSON string
 	    Gson gson = new Gson();
 	    String fileString = gson.toJson(dataPoints.toArray());
 	    if(TESTING)
@@ -178,6 +196,7 @@ public class GUI
 		outputText.setText(fileString);
 	    }
 
+	    // Put the string created by Gson into a text file to be passed to the classifier
 	    File jsonFile = new File(JSON_FILENAME);
 	    if(jsonFile.exists())
 	    {
@@ -207,12 +226,16 @@ public class GUI
 	}
 
 	String result = executePython();
+
+	// Display results on the output setion of the GUI
 	String[] values = result.split(";");
 	String phase = values[0];
 	String rules = values[1];
+
 	outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
     }
 	
+    // This method takes in a 3-element array and returns whether or not the middle point is within the VARIANCE
     public static boolean isValidData(int[] threePoints)
     {
 	if(Math.abs(threePoints[0] - threePoints[2]) < 2 * VARIANCE)
