@@ -188,18 +188,23 @@ def checkData(data):
         to surrounding entries.
 
     Parameters:
-        data - a set of data points from input
+        data - a list of data points from input
     '''
 
     # Set threshold to determine unusable entries
     ALT_THRESH = 5          # altitude is in hundred feet
-    SPD_THRESH = 100        # speed is in feet/s
+    SPD_THRESH = 100        # speed is in thousand-feet/s
+
+    JSON_ALT_NAME = "alt"
+    JSON_SPD_NAME = "speed"
 
     print str(len(data)) + " entries"
     for i in range(len(data)):
-        removed = []
         if data[i]["alt"] == 0 and i > 0 and \
-                ( (abs(data[i-1]["alt"] - data[i]["alt"]) >= ALT_THRESH) or \
-                      abs(data[i]["speed"] - data[i-1]["speed"]) >= SPD_THRESH ):
-            print "Removed: " + str(data[i]["alt"]) + ". Entry #" + str(i)
+                ( (abs(data[i-1][JSON_ALT_NAME] - data[i][JSON_ALT_NAME]) >= ALT_THRESH) or \
+                      abs(data[i][JSON_SPD_NAME] - data[i-1][JSON_SPD_NAME]) >= SPD_THRESH ):
+            print data[i] + "(#" + str(i) + ")"
+            print "Removed: " + str(data[i]["timestamp"])
             data.remove(data[i])
+
+    #return data
