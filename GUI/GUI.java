@@ -30,7 +30,7 @@ public class GUI
     private static final String FRAME_TITLE     = "Phase of Flight Calculator";
     private static final String JSON_FILENAME   = "Flight_Data.txt";
     private static final String PYTHON_FILENAME = "main.py";
-	private static final int    RANGE           = 10;
+    private static final int    VARIANCE        = 10;
 
     // JDBC Connection Fields
     private static final String CONNECTION_URL  = "jdbc:oracle:thin:@//localhost:1521/cablocal";
@@ -128,7 +128,9 @@ public class GUI
 							   + SPEED + ","
 							   + TIMESTAMP + ","
 							   + " FROM "
-							   + TABLE_NAME);
+							   + TABLE_NAME
+							   + " WHERE AC_ID="
+							   + trackID.getText());
 
 	    ArrayList<Integer> altitudes = new ArrayList<Integer>();
 	    ArrayList<Integer> speed     = new ArrayList<Integer>();
