@@ -3,9 +3,7 @@ from __future__ import division
 # import matplotlib.pyplot as plt
 from datetime import timedelta, datetime
 
-import json
-
-datetimeformat = "%Y-%m-%d %H:%M:%S.%f" # 2015-12-09 01:18:41.891210
+datetimeformat = "%H:%M:%S.%f" # 2015-12-09 01:18:41.891210
 
 def fiveNumberSummary(lst):
     '''Construct 5 number summary:
@@ -109,14 +107,14 @@ def ruleClassification(correlatedData, time):
         actualDataIndex = 0
 
         for i in range(timestamps):
-            if i >= time:
+            if timestamp >= time:
                 actualDataIndex = i
                 break
 
         if flightrules[i].find('FR') > -1:
             return flightrules[i]
         elif i > 0 and i < (len(timestamps) - 1) \
-                and flightrules[i-1].find('FR') > -1 and flightrules[i+1].find('FR') > -1:
+                and flightRules[i-1].find('FR') > -1 and flightRules[i+1].find('FR') > -1:
             if abs(altitudes[i] - altitudes[i-1]) <= abs(altitudes[i] - altitudes[i+1]):
                 return flightrules[i-1]
             else:
@@ -167,17 +165,19 @@ def restructureDataToPeriods(data, time):
         List of tuples
     '''
 
+    time = time[:-3]
     formatTime = datetime.strptime(time, datetimeformat)
 
     restructured = []
 
     # For data within time section
     for i in data:
-        if i["timestamp"].find('.') <= -1:
-            i["timestamp"] += '.000000'
-        if (formatTime - timedelta(seconds=30)) <= datetime.strptime(i["timestamp"], datetimeformat) \
-            and (formatTime + timedelta(seconds=30)) >= datetime.strptime(i["timestamp"], datetimeformat):
-            restructured.append(tuple(i.values()))
+        if i["ts"].find('.') <= -1:
+            i["ts"] += '.000000'
+	i["ts"] = i["ts"][:-3]
+        if (formatTime - timedelta(seconds=30)) <= datetime.strptime(i["ts"], datetimeformat) \
+            and (formatTime + timedelta(seconds=30)) >= datetime.strptime(i["ts"], datetimeformat):
+            restructured.append( (i["ts"], i["alt"], i["speed"]) )
 
     return restructured
 
