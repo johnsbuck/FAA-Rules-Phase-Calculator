@@ -184,12 +184,18 @@ def restructureDataToPeriods(data, time):
 def checkData(data):
     ''' Redundancy check integrity of data passed in through JSON
 
-        - Remove bad entries by checking for sudden jumps in speed and altitude that do not correlate
-        to surrounding entries.
-        - Remove entries from the actual list of dictionaries
+        - Run through data entries
+        - Include "good" entries
+            * altitude and speed greater than or equal to 0
+            * difference in altitude less than ALT_THRESH
+            * difference in speed less than SPD_THRESH
+        - Skip continuous "bad" entries if exist
 
     Parameters:
         data - a list of data points from input
+
+    Returns:
+        cleaned - list of valid data points filtered from input
     '''
 
     # Set threshold to determine unusable entries
@@ -200,42 +206,19 @@ def checkData(data):
     JSON_SPD_NAME = "speed"
 
     print str(len(data)) + " entries"
-    removed = []
+    cleaned = [data[0]]
 
-    for i in range(len(data)):
+    for i in range(len(data)-1):
+        i = i + 1
         alt_diff = abs(data[i-1][JSON_ALT_NAME] - data[i][JSON_ALT_NAME])
         spd_diff = abs(data[i][JSON_SPD_NAME] - data[i-1][JSON_SPD_NAME])
+        last_alt = abs(data[i][JSON_ALT_NAME] - cleaned[-1][JSON_ALT_NAME])
+        last_spd = abs(data[i][JSON_SPD_NAME] - cleaned[-1][JSON_SPD_NAME])
 
-        if i > 0 and (data[i][JSON_ALT_NAME] < 0 or data[i][JSON_SPD_NAME] < 0 or \
-                (data[i][JSON_ALT_NAME] == 0 and (alt_diff >= ALT_THRESH or spd_diff >= SPD_THRESH ))):
-            print "checking entry #" + str(i)
+        if data[i][JSON_ALT_NAME] >= 0 and data[i][JSON_SPD_NAME] >= 0 and \
+                (i > 0 and alt_diff < ALT_THRESH and spd_diff < SPD_THRESH) and \
+                (last_alt < ALT_THRESH and last_spd < SPD_THRESH):
+            cleaned.append(data[i])
 
-            # DEBUG
-            # print 3 entries: one before, one after, and the entry being removed
-            _printDict(data[i-1])
-            _printDict(data[i])
-            _printDict(data[i+1])
-
-            # add to remove list
-            removed.append(i)
-
-            # if next entry have the same value then remove it, too
-            i = i + 1
-            while data[i][JSON_ALT_NAME] == data[i-1][JSON_ALT_NAME]:
-                print i
-                removed.append(i)
-                if i + 1 < len(data):
-                    i = i + 1
-
-    if len(removed) > 0:
-        for i in removed:
-            data.remove(data[i])
-
-    print "removed", len(removed), "entries"
-    print "now", len(data), "entries"
-
-def _printDict(dict):
-    print "{"
-    for k in dict:
-        print "\t", k,": ", dict[k]
-    print "}"
+    print "cleaned:", len(cleaned), "entries"
+    return cleaned
