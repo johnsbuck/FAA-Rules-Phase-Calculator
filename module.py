@@ -59,12 +59,14 @@ def phaseClassification(correlatedData, time):
 
     # Check for weird things like if the max is in the middle, and aircraft goes up and back down
 
+    # print altitudeSummary
+
     # If there is little altitude difference
-    if abs(altitudeSummary["first"] - altitudeSummary["last"]) <= 5:
+    if abs(altitudeSummary["first"] - altitudeSummary["last"]) < 10:
         #If low speed and low altitude
         if speedSummary["avg"] <= 100 and altitudeSummary["max"] <= 5:
             phases = "Taxi"
-        elif abs(altitudeSummary["max"] - altitudeSummary["min"]) <= 5:
+        elif abs(altitudeSummary["max"] - altitudeSummary["min"]) < 10:
             phases = "Cruise"
         else:
             phases = "Unknown"
