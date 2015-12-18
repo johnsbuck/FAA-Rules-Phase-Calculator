@@ -179,7 +179,10 @@ def restructureDataToPeriods(data, time):
 	i["ts"] = i["ts"][:-3]
         if (formatTime - timedelta(seconds=30)) <= datetime.strptime(i["ts"], datetimeformat) \
             and (formatTime + timedelta(seconds=30)) >= datetime.strptime(i["ts"], datetimeformat):
-            restructured.append( (i["ts"], i["alt"], i["speed"]) )
+            if len(i) > 3:
+                restructured.append( (i["ts"], i["alt"], i["speed"], i["flightrules"]) )
+            else:
+                restructured.append( (i["ts"], i["alt"], i["speed"]) )
 
     return restructured
 
