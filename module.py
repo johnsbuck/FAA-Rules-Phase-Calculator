@@ -205,7 +205,7 @@ def checkData(data):
     JSON_ALT_NAME = "alt"
     JSON_SPD_NAME = "speed"
 
-    print str(len(data)) + " entries"
+    # print str(len(data)) + " entries"
     cleaned = [data[0]]
 
     for i in range(len(data)-1):
@@ -220,5 +220,5 @@ def checkData(data):
                 (last_alt < ALT_THRESH and last_spd < SPD_THRESH):
             cleaned.append(data[i])
 
-    print "cleaned:", len(cleaned), "entries"
+    # print "cleaned:", len(cleaned), "entries"
     return cleaned

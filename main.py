@@ -25,8 +25,10 @@ def callModule(data, time):
         data - JSON file containing information from aircraft.
     '''
 
-    print module.phaseClassification(importJSONFile(data), time)
-    print module.ruleClassification(importJSONFile(data), time)
+    clean = module.checkData(importJSONFile(data))
+
+    print module.phaseClassification(clean, time) + ";" +
+        module.ruleClassification(clean, time)
 
 # START OF SCRIPT
 if len(sys.argv) >= 3:
