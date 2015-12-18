@@ -153,7 +153,7 @@ public class GUI
 		cleaningTimes[i]     = queryData.getString(TIMESTAMP);
 	    }
 
-	    // Add middle data point to list containing the good data that will be sent to the clasifier
+	    // Add middle data point to list containing the good data that will be sent to the classifier
 	    do
 	    {
 		if(isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
