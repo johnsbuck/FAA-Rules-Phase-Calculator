@@ -109,27 +109,6 @@ public class GUI
 	
 	// Create the output panel
 	outputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-	
-        DocumentListener docLis = new DocumentListener() {
-
-            public void insertUpdate(DocumentEvent e) {
-                printIt(e);
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                printIt(e);
-            }
-
-            public void changedUpdate(DocumentEvent e) {
-                printIt(e);
-            }
-            
-            private void printIt(DocumentEvent e) {
-                
-                
-            }
-            
-        };
         
 	outputText.setEditable(false);
 	outputText.setBorder(new BevelBorder(BevelBorder.LOWERED));
