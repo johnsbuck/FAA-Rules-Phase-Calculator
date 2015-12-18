@@ -14,14 +14,16 @@ import com.google.gson.Gson;
 
 import java.awt.*;
 import java.awt.event.*;
-import javax.swing.*;
-import javax.swing.border.*;
-
-import java.util.Arrays;
-import java.util.ArrayList;
 
 import java.io.*;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import javax.swing.*;
+import javax.swing.border.*;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class GUI
 {
@@ -31,7 +33,7 @@ public class GUI
     // Constant Fields
     private static final String IDENTIFIER      = "Track ID: ";
     private static final String FRAME_TITLE     = "Phase of Flight Calculator";
-    private static final String JSON_FILENAME   = "Flight_Data.txt";
+    private static final String JSON_FILENAME   = "Flight_Data.json";
     private static final String PYTHON_FILENAME = "main.py";
     private static final int    VARIANCE        = 10;
 
@@ -42,7 +44,7 @@ public class GUI
     private static final String TABLE_NAME      = "ARTS_RH_CLEANED";
     private static final String ALTITUDE        = "F9_ALTITUDE";
     private static final String SPEED           = "F10_SPEED";
-    private static final String TIMESTAMP       = "TO_CHAR(F3_F4_DATETIME, 'HH24:MI:SS:FF')";
+    private static final String TIMESTAMP       = "TO_CHAR(F3_F4_DATETIME,'HH24:MI:SS.FF')";
 
     // Frame Fields
     private static JFrame frame         = new JFrame(FRAME_TITLE);
@@ -51,7 +53,7 @@ public class GUI
     // GUI Input Fields
     private static JPanel inputPanel    = new JPanel(new GridLayout(3, 1));
     private static JTextField trackID   = new JTextField();
-    private static JTextField time      = new JTextField();
+    private static JTextField time      = new JTextField("HH24:MM:SS:FF");
     private static JButton analyze      = new JButton("Analyze");
 
     // GUI Output Fields
@@ -90,7 +92,14 @@ public class GUI
 	    {
 		public void actionPerformed(ActionEvent e)
 		{
-		    buttonAction();
+                    if (!time.getText().equals("") && !trackID.getText().equals("")) 
+                    {
+                        buttonAction();
+                    }
+                    else
+                    {
+                        outputText.setText("Invalid input");
+                    }
 		}
 	    });
 
@@ -101,6 +110,27 @@ public class GUI
 	// Create the output panel
 	outputPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 	
+        DocumentListener docLis = new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                printIt(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                printIt(e);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+                printIt(e);
+            }
+            
+            private void printIt(DocumentEvent e) {
+                
+                
+            }
+            
+        };
+        
 	outputText.setEditable(false);
 	outputText.setBorder(new BevelBorder(BevelBorder.LOWERED));
 	outputPanel.add(outputText);
@@ -111,7 +141,7 @@ public class GUI
 	frame.setContentPane(contentPanel);
 
 	// Set properties of the window containing the interface
-	frame.setSize(400, 150);
+	frame.setSize(750, 150);
 	frame.setResizable(false);
 	frame.setVisible(true);
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -126,18 +156,20 @@ public class GUI
 	    Driver jdbcDriver = new oracle.jdbc.driver.OracleDriver();
 	    DriverManager.registerDriver(jdbcDriver);
 
+            System.out.println("Querying Database");
 	    // Create the database connection and make a query that will give us all the data for a single aircraft
 	    Connection con = DriverManager.getConnection(CONNECTION_URL, CONNECTION_USER, CONNECTION_PASS);
 	    Statement selectQuery = con.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
 	    ResultSet queryData = selectQuery.executeQuery("SELECT "
 							   + ALTITUDE + ","
 							   + SPEED + ","
-							   + TIMESTAMP + ","
+							   + TIMESTAMP 
 							   + " FROM "
 							   + TABLE_NAME
-							   + " WHERE AC_ID="
+							   + " WHERE AC_ID = "
 							   + trackID.getText());
 	    
+            System.out.println("Preliminary Data Cleaning");
 	    // Do a minimal clean of the data to remove large spikes
 	    ArrayList<DataPoint> dataPoints = new ArrayList<DataPoint>();
 	    
@@ -153,7 +185,7 @@ public class GUI
 		cleaningTimes[i]     = queryData.getString(TIMESTAMP);
 	    }
 
-	    // Add middle data point to list containing the good data that will be sent to the classifier
+	    // Add middle data point to list containing the good data that will be sent to the clasifier
 	    do
 	    {
 		if(isValidData(cleaningPeriod[0]) && isValidData(cleaningPeriod[1]))
@@ -182,12 +214,13 @@ public class GUI
 		    cleaningPeriod[1][1] = queryData.getInt(SPEED);
 		    cleaningTimes[2]     = queryData.getString(TIMESTAMP);
 		}
-
+                
 	    } while(queryData.next());
 	    
 	    // Close JDBC connection
 	    con.close();
 	    
+            System.out.println("Creating JSON File");
 	    // Convert the list of DataPoint's to a JSON string
 	    Gson gson = new Gson();
 	    String fileString = gson.toJson(dataPoints.toArray());
@@ -207,6 +240,18 @@ public class GUI
 	    PrintWriter writer = new PrintWriter(JSON_FILENAME);
 	    writer.println(fileString);
 	    writer.close();
+            
+            System.out.println("Analyzing Data");
+            // Start Python Modules
+            String result = executePython();
+
+            // Display results on the output setion of the GUI
+            String[] values = result.split(";");
+            String phase = values[0];
+            String rules = values[1];
+
+            outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
+            System.out.println();
 	}
 	catch(Exception ex)
 	{
@@ -222,17 +267,9 @@ public class GUI
 	    else
 	    {
 		outputText.setText("Other Issues");
+                ex.printStackTrace();
 	    }
 	}
-
-	String result = executePython();
-
-	// Display results on the output setion of the GUI
-	String[] values = result.split(";");
-	String phase = values[0];
-	String rules = values[1];
-
-	outputText.setText("Phase of Flight: " + phase + "\nRules of Flight: " + rules);
     }
 	
     // This method takes in a 3-element array and returns whether or not the middle point is within the VARIANCE
@@ -253,7 +290,7 @@ public class GUI
       	try
 	{
 	    // Run python portion of project
-	    ProcessBuilder pb = new ProcessBuilder("python", PYTHON_FILENAME, JSON_FILENAME);
+	    ProcessBuilder pb = new ProcessBuilder("python", PYTHON_FILENAME, JSON_FILENAME, time.getText());
 	    Process p = pb.start();	    
 	    BufferedReader pythonOutput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 
